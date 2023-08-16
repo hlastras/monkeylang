@@ -5,15 +5,16 @@ import (
 )
 
 type Lexer struct {
-	input        string
+	//input        string
+	input        []rune
 	position     int
 	readPosition int
-	ch           byte
+	ch           rune
 }
 
 func NewLexer(input string) *Lexer {
-	l := &Lexer{input: input}
-	l.readChar()
+	l := &Lexer{input: []rune(input)}
+	l.readRune()
 	return l
 }
 
@@ -25,7 +26,7 @@ func (l *Lexer) NextToken() token.Token {
 	switch l.ch {
 	case '=':
 		if l.peekChar() == '=' {
-			l.readChar()
+			l.readRune()
 			tok = token.Token{Type: token.EQ, Literal: "=="}
 		} else {
 			tok = newToken(token.ASSIGN, l.ch)
@@ -52,7 +53,7 @@ func (l *Lexer) NextToken() token.Token {
 		tok = newToken(token.SLASH, l.ch)
 	case '!':
 		if l.peekChar() == '=' {
-			l.readChar()
+			l.readRune()
 			tok = token.Token{Type: token.NOT_EQ, Literal: "!="}
 		} else {
 			tok = newToken(token.BANG, l.ch)
@@ -80,15 +81,15 @@ func (l *Lexer) NextToken() token.Token {
 		}
 	}
 
-	l.readChar()
+	l.readRune()
 	return tok
 }
 
-func newToken(tokenType token.TokenType, ch byte) token.Token {
+func newToken(tokenType token.TokenType, ch rune) token.Token {
 	return token.Token{Type: tokenType, Literal: string(ch)}
 }
 
-func (l *Lexer) readChar() {
+func (l *Lexer) readRune() {
 	if l.readPosition >= len(l.input) {
 		l.ch = 0
 	} else {
@@ -98,7 +99,7 @@ func (l *Lexer) readChar() {
 	l.readPosition += 1
 }
 
-func (l *Lexer) peekChar() byte {
+func (l *Lexer) peekChar() rune {
 	if l.readPosition >= len(l.input) {
 		return 0
 	} else {
@@ -109,34 +110,34 @@ func (l *Lexer) peekChar() byte {
 func (l *Lexer) readIdentifier() string {
 	position := l.position
 	for isLetter(l.ch) {
-		l.readChar()
+		l.readRune()
 	}
-	return l.input[position:l.position]
+	return string(l.input[position:l.position])
 }
 
 func (l *Lexer) readNumber() string {
 	position := l.position
 	for isDigit(l.ch) {
-		l.readChar()
+		l.readRune()
 	}
 
-	return l.input[position:l.position]
+	return string(l.input[position:l.position])
 }
 
 func (l *Lexer) skipWhitespace() {
 	for isWhitespace(l.ch) {
-		l.readChar()
+		l.readRune()
 	}
 }
 
-func isLetter(ch byte) bool {
-	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
+func isLetter(ch rune) bool {
+	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_' || ch >= 128
 }
 
-func isDigit(ch byte) bool {
+func isDigit(ch rune) bool {
 	return '0' <= ch && ch <= '9'
 }
 
-func isWhitespace(ch byte) bool {
+func isWhitespace(ch rune) bool {
 	return ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r'
 }

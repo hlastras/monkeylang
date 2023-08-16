@@ -159,3 +159,110 @@ func TestNextToken2(t *testing.T) {
 		}
 	}
 }
+
+func TestNextToken_UnicodeVariables(t *testing.T) {
+	input := `
+		let five = 5;
+		let år = 2023;
+		let número = 42;
+		let α = 1;
+		let β = 2;
+		let возраст = 25;
+		let 年齢 = 30;
+		let عمر = 27;
+		let 温度inCelsius = 25;
+		let 学生count = 30;
+		let 年龄 = 22;
+		let 🎉 = 10;
+	`
+
+	tests := []struct {
+		expectedType    token.TokenType
+		expectedLiteral string
+	}{
+		{token.LET, "let"},
+		{token.IDENT, "five"},
+		{token.ASSIGN, "="},
+		{token.INT, "5"},
+		{token.SEMICOLON, ";"},
+
+		{token.LET, "let"},
+		{token.IDENT, "år"},
+		{token.ASSIGN, "="},
+		{token.INT, "2023"},
+		{token.SEMICOLON, ";"},
+
+		{token.LET, "let"},
+		{token.IDENT, "número"},
+		{token.ASSIGN, "="},
+		{token.INT, "42"},
+		{token.SEMICOLON, ";"},
+
+		{token.LET, "let"},
+		{token.IDENT, "α"},
+		{token.ASSIGN, "="},
+		{token.INT, "1"},
+		{token.SEMICOLON, ";"},
+
+		{token.LET, "let"},
+		{token.IDENT, "β"},
+		{token.ASSIGN, "="},
+		{token.INT, "2"},
+		{token.SEMICOLON, ";"},
+
+		{token.LET, "let"},
+		{token.IDENT, "возраст"},
+		{token.ASSIGN, "="},
+		{token.INT, "25"},
+		{token.SEMICOLON, ";"},
+
+		{token.LET, "let"},
+		{token.IDENT, "年齢"},
+		{token.ASSIGN, "="},
+		{token.INT, "30"},
+		{token.SEMICOLON, ";"},
+
+		{token.LET, "let"},
+		{token.IDENT, "عمر"},
+		{token.ASSIGN, "="},
+		{token.INT, "27"},
+		{token.SEMICOLON, ";"},
+
+		{token.LET, "let"},
+		{token.IDENT, "温度inCelsius"},
+		{token.ASSIGN, "="},
+		{token.INT, "25"},
+		{token.SEMICOLON, ";"},
+
+		{token.LET, "let"},
+		{token.IDENT, "学生count"},
+		{token.ASSIGN, "="},
+		{token.INT, "30"},
+		{token.SEMICOLON, ";"},
+
+		{token.LET, "let"},
+		{token.IDENT, "年龄"},
+		{token.ASSIGN, "="},
+		{token.INT, "22"},
+		{token.SEMICOLON, ";"},
+
+		{token.LET, "let"},
+		{token.IDENT, "🎉"},
+		{token.ASSIGN, "="},
+		{token.INT, "10"},
+		{token.SEMICOLON, ";"},
+	}
+
+	l := NewLexer(input)
+
+	for i, tt := range tests {
+		tok := l.NextToken()
+		if tok.Type != tt.expectedType {
+			t.Fatalf("tests[%d] - tokentype wrong. expected=%q, got=%q", i, tt.expectedType, tok.Type)
+		}
+
+		if tok.Literal != tt.expectedLiteral {
+			t.Fatalf("tests[%d] - tokentype wrong. expected=%q, got=%q", i, tt.expectedLiteral, tok.Literal)
+		}
+	}
+}
